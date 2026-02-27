@@ -80,6 +80,11 @@ namespace UniGLTF
             // import as asset
             var unitypath = UnityPath.FromFullpath(assetPath);
             unitypath.ImportAsset();
+            if (AssetImporter.GetAtPath(unitypath.Value) is GltfScriptedImporterBase importer)
+            {
+                importer.SetSourcePath(path, true);
+                importer.SaveAndReimport();
+            }
             var asset = unitypath.LoadAsset<GameObject>();
             Selection.activeObject = asset;
         }

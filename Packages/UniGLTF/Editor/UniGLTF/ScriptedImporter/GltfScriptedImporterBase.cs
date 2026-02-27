@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.IO;
 using System.Linq;
 
 #if UNITY_2020_2_OR_NEWER
@@ -20,6 +21,12 @@ namespace UniGLTF
 
         [SerializeField]
         public ImporterRenderPipelineTypes m_renderPipeline;
+
+        [SerializeField]
+        public bool m_useSourcePath = false;
+
+        [SerializeField]
+        public string m_sourcePath = null;
 
         /// <summary>
         /// glb をパースして、UnityObject化、さらにAsset化する
@@ -44,7 +51,8 @@ namespace UniGLTF
             var materialGenerator = GetMaterialDescriptorGenerator(renderPipeline);
             var importerContextSettings = new ImporterContextSettings(loadAnimation: true, invertAxis: reverseAxis);
 
-            using (var data = new AutoGltfFileParser(scriptedImporter.assetPath).Parse())
+            var sourcePath = ResolveSourcePath(scriptedImporter);
+            using (var data = new AutoGltfFileParser(sourcePath).Parse())
             using (var loader = new ImporterContext(data, extractedObjects, materialGenerator: materialGenerator, settings: importerContextSettings))
             {
                 // Configure TextureImporter to Extracted Textures.
@@ -66,6 +74,46 @@ namespace UniGLTF
                 context.AddObjectToAsset(root.name, root);
                 context.SetMainObject(root);
             }
+        }
+
+        internal string GetResolvedSourcePath()
+        {
+            if (m_useSourcePath && !string.IsNullOrEmpty(m_sourcePath))
+            {
+                var resolved = ResolveToFullPath(m_sourcePath);
+                if (!string.IsNullOrEmpty(resolved) && File.Exists(resolved))
+                {
+                    return resolved;
+                }
+            }
+
+            return ResolveToFullPath(assetPath);
+        }
+
+        internal void SetSourcePath(string path, bool enabled)
+        {
+            m_sourcePath = path;
+            m_useSourcePath = enabled;
+        }
+
+        private static string ResolveSourcePath(ScriptedImporter scriptedImporter)
+        {
+            if (scriptedImporter is GltfScriptedImporterBase gltf)
+            {
+                return gltf.GetResolvedSourcePath();
+            }
+            return scriptedImporter.assetPath;
+        }
+
+        private static string ResolveToFullPath(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return path;
+            if (Path.IsPathRooted(path)) return path;
+            if (path.StartsWith("Assets/") || path.StartsWith("Packages/"))
+            {
+                return UnityPath.FromUnityPath(path).FullPath;
+            }
+            return Path.GetFullPath(path);
         }
 
         private static IMaterialDescriptorGenerator GetMaterialDescriptorGenerator(ImporterRenderPipelineTypes renderPipeline)

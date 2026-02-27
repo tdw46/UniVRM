@@ -55,12 +55,14 @@ namespace UniGLTF
 
         public override void OnInspectorGUI()
         {
+            serializedObject.Update();
             s_currentTab = MeshUtility.TabBar.OnGUI(s_currentTab);
             GUILayout.Space(10);
 
             switch (s_currentTab)
             {
                 case Tabs.Model:
+                    DrawSourceOverrideGUI();
                     base.OnInspectorGUI();
                     break;
 
@@ -77,6 +79,56 @@ namespace UniGLTF
                     ApplyRevertGUI();
                     break;
             }
+
+            serializedObject.ApplyModifiedProperties();
+        }
+
+        private void DrawSourceOverrideGUI()
+        {
+            if (m_importer == null) return;
+
+            var useProp = serializedObject.FindProperty("m_useSourcePath");
+            var pathProp = serializedObject.FindProperty("m_sourcePath");
+
+            EditorGUILayout.LabelField("Reimport Source", EditorStyles.boldLabel);
+            using (new EditorGUI.IndentLevelScope())
+            {
+                EditorGUILayout.PropertyField(useProp, new GUIContent("Use Source Override"));
+                using (new EditorGUI.DisabledScope(!useProp.boolValue))
+                {
+                    EditorGUILayout.PropertyField(pathProp, new GUIContent("Source Path"));
+                }
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    if (GUILayout.Button("Pick..."))
+                    {
+                        var picked = EditorUtility.OpenFilePanel("Select glTF/GLB", "", "gltf,glb,zip");
+                        if (!string.IsNullOrEmpty(picked))
+                        {
+                            pathProp.stringValue = picked;
+                            useProp.boolValue = true;
+                        }
+                    }
+                    if (GUILayout.Button("Clear"))
+                    {
+                        pathProp.stringValue = string.Empty;
+                        useProp.boolValue = false;
+                    }
+                }
+
+                if (useProp.boolValue)
+                {
+                    var resolved = ((GltfScriptedImporterBase)m_importer).GetResolvedSourcePath();
+                    var exists = !string.IsNullOrEmpty(resolved) && File.Exists(resolved);
+                    var message = exists
+                        ? $"Reimporting from: {resolved}"
+                        : "Source path does not exist.";
+                    EditorGUILayout.HelpBox(message, exists ? MessageType.Info : MessageType.Warning);
+                }
+            }
+
+            GUILayout.Space(6);
         }
     }
 }
