@@ -1,0 +1,21 @@
+---
+description: Extended-UniVRM package layout, assembly boundaries, and compatibility
+alwaysApply: true
+---
+
+# Extended-UniVRM repository
+
+- Target Unity `2022.3.62f2`; do not silently raise Unity, package, API compatibility,
+  or C# language requirements.
+- Keep changes in the owning package: `Packages/UniGLTF`, `Packages/VRM`, or
+  `Packages/VRM10`. Use its `Runtime`, `Editor`, `Tests`, or `Samples~` folder.
+- Select namespace and dependencies from nearby code and the nearest `.asmdef`.
+  There is no single repository root namespace.
+- Runtime assemblies must not reference Editor assemblies or `UnityEditor`.
+  Put editor-only code under an `Editor` folder and editor-only asmdef.
+- When crossing an assembly boundary, update the owning `.asmdef` deliberately.
+  Avoid adding broad or circular references.
+- Preserve supported VRM/glTF behavior, serialized data, and public API compatibility.
+  Avoid unrelated cleanup in legacy files.
+- Do not modify package copies under `Assets/` when the authoritative source is under
+  `Packages/`; identify the owning source before editing duplicated-looking code.
