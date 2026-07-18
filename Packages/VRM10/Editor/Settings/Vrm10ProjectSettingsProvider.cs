@@ -41,9 +41,24 @@ namespace VRM10.Settings
                 }
             };
             contentElement.Add(title);
-            var propertyField = new PropertyField(assetObject.FindProperty("materialDescriptorGeneratorFactory"));
-            propertyField.RegisterValueChangeCallback(_ => asset.Save());
-            contentElement.Add(propertyField);
+
+            var materialField = new PropertyField(
+                assetObject.FindProperty("materialDescriptorGeneratorFactory"));
+            materialField.RegisterValueChangeCallback(_ => asset.Save());
+            contentElement.Add(materialField);
+
+            var importExtensionsField = new PropertyField(
+                assetObject.FindProperty("enableImportExtensions"),
+                "Enable VRM Import Extensions");
+            importExtensionsField.RegisterValueChangeCallback(_ => asset.Save());
+            contentElement.Add(importExtensionsField);
+
+            contentElement.Add(new HelpBox(
+                "When enabled, packages registered with Vrm10ImportExtensionRegistry may " +
+                "run during .vrm ScriptedImporter (while AssetImportContext is live). " +
+                "Disable to keep import free of third-party handlers. " +
+                "Reimport .vrm assets after changing this setting.",
+                HelpBoxMessageType.Info));
 
             contentElement.Bind(assetObject);
         }

@@ -68,7 +68,8 @@ namespace UniVRM10
     /// <summary>
     /// Registry for <see cref="IVrm10ImportExtension"/>. Presence of this type in
     /// <c>VRM10.Editor</c> is the soft signal that import hooks exist.
-    /// Invocation is gated by <see cref="IsEnabled"/> (<see cref="Vrm10Preference.EnableImportExtensions"/>).
+    /// Invocation is gated by <see cref="IsEnabled"/>
+    /// (<c>Project Settings / VRM10 / Enable VRM Import Extensions</c>).
     /// </summary>
     public static class Vrm10ImportExtensionRegistry
     {
@@ -79,10 +80,11 @@ namespace UniVRM10
         public static bool IsAvailable => true;
 
         /// <summary>
-        /// User preference: when false, <see cref="InvokeAll"/> is a no-op and consumers
+        /// Project setting: when false, <see cref="InvokeAll"/> is a no-op and consumers
         /// should treat hooks as unavailable.
         /// </summary>
-        public static bool IsEnabled => Vrm10Preference.EnableImportExtensions;
+        public static bool IsEnabled =>
+            VRM10.Settings.Vrm10ProjectEditorSettings.instance.EnableImportExtensions;
 
         public static void Register(IVrm10ImportExtension extension)
         {
