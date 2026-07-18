@@ -47,11 +47,17 @@ namespace VRM10.Settings
             materialField.RegisterValueChangeCallback(_ => asset.Save());
             contentElement.Add(materialField);
 
-            var importExtensionsField = new PropertyField(
-                assetObject.FindProperty("enableImportExtensions"),
-                "Enable VRM Import Extensions");
-            importExtensionsField.RegisterValueChangeCallback(_ => asset.Save());
-            contentElement.Add(importExtensionsField);
+            // Bind via EnableImportExtensions (storage is inverted disableImportExtensions).
+            var importExtensionsToggle = new Toggle("Enable VRM Import Extensions")
+            {
+                value = asset.EnableImportExtensions
+            };
+            importExtensionsToggle.RegisterValueChangedCallback(evt =>
+            {
+                asset.EnableImportExtensions = evt.newValue;
+                asset.Save();
+            });
+            contentElement.Add(importExtensionsToggle);
 
             contentElement.Add(new HelpBox(
                 "When enabled, packages registered with Vrm10ImportExtensionRegistry may " +

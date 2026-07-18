@@ -8,16 +8,22 @@ namespace VRM10.Settings
     {
         [SerializeField] private MaterialDescriptorGeneratorFactory materialDescriptorGeneratorFactory;
 
+        // Inverted so a missing field on older ProjectSettings assets deserializes as
+        // false → extensions enabled (intended default). A positive bool would become false.
         [SerializeField]
         [Tooltip(
-            "When enabled, packages registered with Vrm10ImportExtensionRegistry may run " +
-            "during .vrm ScriptedImporter. Disable to keep import free of third-party handlers.")]
-        private bool enableImportExtensions = true;
+            "When set, Vrm10ImportExtensionRegistry handlers are not invoked during .vrm " +
+            "ScriptedImporter.")]
+        private bool disableImportExtensions;
 
         public MaterialDescriptorGeneratorFactory MaterialDescriptorGeneratorFactory =>
             materialDescriptorGeneratorFactory;
 
-        public bool EnableImportExtensions => enableImportExtensions;
+        public bool EnableImportExtensions
+        {
+            get => !disableImportExtensions;
+            set => disableImportExtensions = !value;
+        }
 
         public void Save()
         {
