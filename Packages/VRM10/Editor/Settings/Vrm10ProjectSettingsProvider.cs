@@ -66,6 +66,24 @@ namespace VRM10.Settings
                 "Reimport .vrm assets after changing this setting.",
                 HelpBoxMessageType.Info));
 
+            var exportExtensionsToggle = new Toggle("Enable VRM Export Extensions")
+            {
+                value = asset.EnableExportExtensions
+            };
+            exportExtensionsToggle.RegisterValueChangedCallback(evt =>
+            {
+                asset.EnableExportExtensions = evt.newValue;
+                asset.Save();
+            });
+            contentElement.Add(exportExtensionsToggle);
+
+            contentElement.Add(new HelpBox(
+                "When enabled, packages registered with Vrm10ExportExtensionRegistry may " +
+                "run during VRM 1.0 export (pre-hierarchy strip, extra textures, root " +
+                "extensions such as VRMXT_vfx). Disable to keep export free of " +
+                "third-party handlers.",
+                HelpBoxMessageType.Info));
+
             contentElement.Bind(assetObject);
         }
     }

@@ -306,6 +306,23 @@ namespace UniVRM10
                             BoneNormalizer.Replace(root, newMeshMap, m_settings.FreezeMeshKeepRotation);
                         }
                     }
+                    else if (UniVRM10.Vrm10ExportExtensionRegistry.IsEnabled &&
+                             UniVRM10.Vrm10ExportExtensionRegistry.HasHandlers)
+                    {
+                        // Export handlers may strip ephemeral children (e.g. VFX ParticleSystems).
+                        // Work on a throwaway copy so the scene hierarchy stays intact.
+                        var copy = GameObject.Instantiate(root);
+                        if (copy.TryGetComponent<Vrm10Instance>(out var vrmInstance))
+                        {
+                            vrmInstance.UpdateType = Vrm10Instance.UpdateTypes.None;
+                        }
+
+                        disposer.Push(copy);
+                        root = copy;
+                    }
+
+                    var exportExtensionContext = new UniVRM10.Vrm10ExportExtensionContext(root);
+                    UniVRM10.Vrm10ExportExtensionRegistry.InvokePreHierarchy(exportExtensionContext);
 
                     var converter = new UniVRM10.ModelExporter();
                     var model = converter.Export(m_settings.MeshExportSettings, arrayManager, root);
@@ -323,7 +340,7 @@ namespace UniVRM10
                     {
                         sparse = m_settings.MorphTargetUseSparse,
                     };
-                    exporter.Export(root, model, converter, option, Vrm ? Vrm.Meta : m_tmpObject.Meta);
+                    exporter.Export(root, model, converter, option, Vrm ? Vrm.Meta : m_tmpObject.Meta, exportExtensionContext);
 
                     var exportedBytes = exporter.Storage.ToGlbBytes();
 

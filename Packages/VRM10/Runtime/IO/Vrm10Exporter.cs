@@ -184,7 +184,13 @@ namespace UniVRM10
             }
         }
 
-        public void Export(GameObject root, Model model, ModelExporter converter, ExportArgs option, VRM10ObjectMeta vrmMeta = null)
+        public void Export(
+            GameObject root,
+            Model model,
+            ModelExporter converter,
+            ExportArgs option,
+            VRM10ObjectMeta vrmMeta = null,
+            Vrm10ExportExtensionContext exportExtensionContext = null)
         {
             Storage.Gltf.asset = ExportAsset(model);
 
@@ -220,6 +226,12 @@ namespace UniVRM10
 
             var (vrm, vrmSpringBone, thumbnailTextureIndex) = ExportVrm(root, model, converter, vrmMeta, Storage.Gltf.nodes, m_textureExporter);
 
+            // Optional packages (e.g. UniVRMXT) register extension-only textures here.
+            // Reuse the caller's context when PreHierarchy already ran (UserData continuity).
+            exportExtensionContext ??= new Vrm10ExportExtensionContext(root);
+            exportExtensionContext.Bind(converter, model, Storage, m_textureExporter);
+            Vrm10ExportExtensionRegistry.InvokePrepareTextures(exportExtensionContext);
+
             // Extension で Texture が増える場合があるので最後に呼ぶ
             var exportedTextures = m_textureExporter.Export();
             for (var exportedTextureIdx = 0; exportedTextureIdx < exportedTextures.Count; ++exportedTextureIdx)
@@ -239,6 +251,8 @@ namespace UniVRM10
             {
                 UniGLTF.Extensions.VRMC_springBone.GltfSerializer.SerializeTo(ref Storage.Gltf.extensions, vrmSpringBone);
             }
+
+            Vrm10ExportExtensionRegistry.InvokeWriteExtensions(exportExtensionContext);
 
             // Fix Duplicated name
             gltfExporter.FixName(Storage.Gltf);
@@ -1063,20 +1077,55 @@ namespace UniVRM10
         {
             using (var arrayManager = new NativeArrayManager())
             {
-                // ヒエラルキーからジオメトリーを収集
-                var converter = new ModelExporter();
-                var model = converter.Export(settings, arrayManager, go);
-
-                // 右手系に変換
-                model.ConvertCoordinate(VrmLib.Coordinates.Vrm1);
-
-                // Model と go から VRM-1.0 にExport
-                var exporter10 = new Vrm10Exporter(settings, materialExporter, textureSerializer);
-                var option = new VrmLib.ExportArgs
+                GameObject exportRoot = go;
+                GameObject disposableCopy = null;
+                try
                 {
-                };
-                exporter10.Export(go, model, converter, option, vrmMeta);
-                return exporter10.Storage.ToGlbBytes();
+                    if (Vrm10ExportExtensionRegistry.IsEnabled &&
+                        Vrm10ExportExtensionRegistry.HasHandlers)
+                    {
+                        // Handlers may destroy ephemeral children; keep caller's hierarchy intact.
+                        disposableCopy = GameObject.Instantiate(go);
+                        if (disposableCopy.TryGetComponent<Vrm10Instance>(out var vrmInstance))
+                        {
+                            vrmInstance.UpdateType = Vrm10Instance.UpdateTypes.None;
+                        }
+
+                        exportRoot = disposableCopy;
+                    }
+
+                    var exportExtensionContext = new Vrm10ExportExtensionContext(exportRoot);
+                    Vrm10ExportExtensionRegistry.InvokePreHierarchy(exportExtensionContext);
+
+                    // ヒエラルキーからジオメトリーを収集
+                    var converter = new ModelExporter();
+                    var model = converter.Export(settings, arrayManager, exportRoot);
+
+                    // 右手系に変換
+                    model.ConvertCoordinate(VrmLib.Coordinates.Vrm1);
+
+                    // Model と go から VRM-1.0 にExport
+                    var exporter10 = new Vrm10Exporter(settings, materialExporter, textureSerializer);
+                    var option = new VrmLib.ExportArgs
+                    {
+                    };
+                    exporter10.Export(exportRoot, model, converter, option, vrmMeta, exportExtensionContext);
+                    return exporter10.Storage.ToGlbBytes();
+                }
+                finally
+                {
+                    if (disposableCopy != null)
+                    {
+                        if (Application.isPlaying)
+                        {
+                            GameObject.Destroy(disposableCopy);
+                        }
+                        else
+                        {
+                            GameObject.DestroyImmediate(disposableCopy);
+                        }
+                    }
+                }
             }
         }
     }

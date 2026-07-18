@@ -16,6 +16,14 @@ namespace VRM10.Settings
             "ScriptedImporter.")]
         private bool disableImportExtensions;
 
+        // Inverted so a missing field on older ProjectSettings assets deserializes as
+        // false → export extensions enabled (intended default).
+        [SerializeField]
+        [Tooltip(
+            "When set, Vrm10ExportExtensionRegistry handlers are not invoked during VRM " +
+            "export.")]
+        private bool disableExportExtensions;
+
         public MaterialDescriptorGeneratorFactory MaterialDescriptorGeneratorFactory =>
             materialDescriptorGeneratorFactory;
 
@@ -23,6 +31,12 @@ namespace VRM10.Settings
         {
             get => !disableImportExtensions;
             set => disableImportExtensions = !value;
+        }
+
+        public bool EnableExportExtensions
+        {
+            get => !disableExportExtensions;
+            set => disableExportExtensions = !value;
         }
 
         public void Save()
