@@ -62,6 +62,16 @@ namespace UniVRM10
                     context.AddObjectToAsset(key.Name, o);
                 });
                 var root = loaded.Root;
+
+                // Optional consumer hooks. Must run while AssetImportContext
+                // is live and before RuntimeGltfInstance is destroyed — Nodes stay valid here.
+                Vrm10ImportExtensionRegistry.InvokeAll(new Vrm10ImportExtensionContext(
+                    context,
+                    scriptedImporter.assetPath,
+                    root,
+                    result.Data.Json,
+                    loaded.Nodes));
+
                 GameObject.DestroyImmediate(loaded);
 
                 context.AddObjectToAsset(root.name, root, AssetIcon);
