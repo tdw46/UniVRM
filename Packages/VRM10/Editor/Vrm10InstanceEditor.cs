@@ -37,6 +37,11 @@ namespace UniVRM10
             {
                 foreach (var m in r.sharedMaterials)
                 {
+                    if (m == null)
+                    {
+                        continue;
+                    }
+
                     m_materials.TryAdd(m.name, m);
                 }
             }
