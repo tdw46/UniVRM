@@ -98,6 +98,21 @@ namespace UniVRM10
         }
 
         /// <summary>
+        /// glTF material index for <paramref name="material"/> (export order), or null if
+        /// not in the export model.
+        /// </summary>
+        public int? TryGetMaterialIndex(Material material)
+        {
+            if (material == null || Converter == null || Model == null)
+            {
+                return null;
+            }
+
+            var index = Converter.Materials.IndexOf(material);
+            return index >= 0 ? index : (int?)null;
+        }
+
+        /// <summary>
         /// Register an sRGB texture for export. Valid in
         /// <see cref="Vrm10ExportExtensionPhase.PrepareTextures"/>.
         /// </summary>
@@ -140,6 +155,43 @@ namespace UniVRM10
             }
 
             var exported = glTFExtensionExport.GetOrCreate(ref Storage.Gltf.extensions);
+            exported.Add(extensionName, new ArraySegment<byte>(utf8Json));
+        }
+
+        /// <summary>
+        /// Write a per-material glTF extension object (UTF-8 JSON body, no wrapping key)
+        /// onto <c>materials[materialIndex]</c>. Valid in
+        /// <see cref="Vrm10ExportExtensionPhase.WriteExtensions"/>.
+        /// </summary>
+        public void AddMaterialExtension(int materialIndex, string extensionName, byte[] utf8Json)
+        {
+            if (string.IsNullOrEmpty(extensionName))
+            {
+                throw new ArgumentException("extensionName is required.", nameof(extensionName));
+            }
+
+            if (utf8Json == null)
+            {
+                throw new ArgumentNullException(nameof(utf8Json));
+            }
+
+            if (Storage == null)
+            {
+                throw new InvalidOperationException(
+                    "Storage is not bound until PrepareTextures / WriteExtensions.");
+            }
+
+            var materials = Storage.Gltf.materials;
+            if (materialIndex < 0 || materials == null || materialIndex >= materials.Count)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(materialIndex),
+                    materialIndex,
+                    $"materialIndex must be in range [0, {materials?.Count ?? 0}).");
+            }
+
+            var gltfMaterial = materials[materialIndex];
+            var exported = glTFExtensionExport.GetOrCreate(ref gltfMaterial.extensions);
             exported.Add(extensionName, new ArraySegment<byte>(utf8Json));
         }
     }
