@@ -31,7 +31,7 @@ namespace UniVRM10
 
         /// <summary>
         /// After VRMC root extensions are written. Add optional root extensions
-        /// (e.g. <c>VRMXT_vfx</c>).
+        /// (e.g. <c>VRMXT_sprite_particle</c>).
         /// </summary>
         WriteExtensions,
     }
@@ -156,6 +156,7 @@ namespace UniVRM10
 
             var exported = glTFExtensionExport.GetOrCreate(ref Storage.Gltf.extensions);
             exported.Add(extensionName, new ArraySegment<byte>(utf8Json));
+            EnsureExtensionsUsed(extensionName);
         }
 
         /// <summary>
@@ -193,6 +194,26 @@ namespace UniVRM10
             var gltfMaterial = materials[materialIndex];
             var exported = glTFExtensionExport.GetOrCreate(ref gltfMaterial.extensions);
             exported.Add(extensionName, new ArraySegment<byte>(utf8Json));
+            EnsureExtensionsUsed(extensionName);
+        }
+
+        /// <summary>
+        /// Add <paramref name="extensionName"/> to <c>extensionsUsed</c> at most once.
+        /// Never writes <c>extensionsRequired</c> (optional consumer extensions).
+        /// </summary>
+        private void EnsureExtensionsUsed(string extensionName)
+        {
+            var used = Storage.Gltf.extensionsUsed;
+            if (used == null)
+            {
+                used = new List<string>();
+                Storage.Gltf.extensionsUsed = used;
+            }
+
+            if (!used.Contains(extensionName))
+            {
+                used.Add(extensionName);
+            }
         }
     }
 
