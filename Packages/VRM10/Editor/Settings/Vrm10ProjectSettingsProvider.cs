@@ -80,7 +80,7 @@ namespace VRM10.Settings
             contentElement.Add(new HelpBox(
                 "When enabled, packages registered with Vrm10ExportExtensionRegistry may " +
                 "run during VRM 1.0 export (pre-hierarchy strip, extra textures, root " +
-                "extensions such as VRMXT_vfx). Disable to keep export free of " +
+                "extensions such as VRMXT_sprite_particle). Disable to keep export free of " +
                 "third-party handlers.",
                 HelpBoxMessageType.Info));
 
