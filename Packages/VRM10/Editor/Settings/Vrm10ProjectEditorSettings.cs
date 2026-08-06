@@ -24,6 +24,14 @@ namespace VRM10.Settings
             "export.")]
         private bool disableExportExtensions;
 
+        // Positive bool: missing field on older assets deserializes as false → match
+        // upstream Vrm10Importer default (LoadAnimation off).
+        [SerializeField]
+        [Tooltip(
+            "When set, .vrm ScriptedImporter loads embedded glTF animations (including " +
+            "morph target weight channels) as AnimationClip sub-assets.")]
+        private bool importGltfAnimations;
+
         public MaterialDescriptorGeneratorFactory MaterialDescriptorGeneratorFactory =>
             materialDescriptorGeneratorFactory;
 
@@ -37,6 +45,12 @@ namespace VRM10.Settings
         {
             get => !disableExportExtensions;
             set => disableExportExtensions = !value;
+        }
+
+        public bool ImportGltfAnimations
+        {
+            get => importGltfAnimations;
+            set => importGltfAnimations = value;
         }
 
         public void Save()

@@ -84,6 +84,24 @@ namespace VRM10.Settings
                 "third-party handlers.",
                 HelpBoxMessageType.Info));
 
+            var importGltfAnimationsToggle = new Toggle("Import glTF animations")
+            {
+                value = asset.ImportGltfAnimations
+            };
+            importGltfAnimationsToggle.RegisterValueChangedCallback(evt =>
+            {
+                asset.ImportGltfAnimations = evt.newValue;
+                asset.Save();
+            });
+            contentElement.Add(importGltfAnimationsToggle);
+
+            contentElement.Add(new HelpBox(
+                "When enabled, .vrm ScriptedImporter loads embedded glTF animations " +
+                "(node TRS and morph target weights) as AnimationClip sub-assets. " +
+                "Default is off (upstream UniVRM behavior). " +
+                "Reimport .vrm assets after changing this setting.",
+                HelpBoxMessageType.Info));
+
             contentElement.Bind(assetObject);
         }
     }

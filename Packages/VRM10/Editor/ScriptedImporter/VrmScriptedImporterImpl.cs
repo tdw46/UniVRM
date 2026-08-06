@@ -42,10 +42,14 @@ namespace UniVRM10
                 .ToDictionary(kv => new SubAssetKey(kv.Value.GetType(), kv.Key.name), kv => kv.Value);
 
             var materialGenerator = GetMaterialDescriptorGenerator(renderPipeline);
+            var importerSettings = new ImporterContextSettings(
+                loadAnimation: Vrm10ProjectEditorSettings.instance.ImportGltfAnimations,
+                invertAxis: Axes.X);
 
-            using (var loader = new Vrm10Importer(result, 
-                externalObjectMap: extractedObjects, 
+            using (var loader = new Vrm10Importer(result,
+                externalObjectMap: extractedObjects,
                 materialGenerator: materialGenerator,
+                settings: importerSettings,
                 isAssetImport: true))
             {
                 // settings TextureImporters

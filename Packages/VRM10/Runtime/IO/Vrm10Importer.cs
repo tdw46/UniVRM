@@ -39,7 +39,9 @@ namespace UniVRM10
             bool isAssetImport = false
             )
             : base(vrm.Data, externalObjectMap, textureDeserializer,
-                settings: new ImporterContextSettings(false, Axes.X),
+                // Default matches upstream: no glTF animation load, X invert.
+                // Callers (ScriptedImporter / Vrm10.Load*) may pass settings to override.
+                settings: settings ?? new ImporterContextSettings(false, Axes.X),
                 isAssetImport: isAssetImport)
         {
             if (vrm == null)
@@ -182,6 +184,21 @@ namespace UniVRM10
 
             // vrm
             controller.Vrm = await LoadVrmAsync(awaitCaller, m_vrm.VrmExtension);
+        }
+
+        /// <summary>
+        /// ScriptedImporter: keep AnimationClip sub-assets from LoadAnimationAsync, but do
+        /// not attach a legacy Animation component to the imported prefab root.
+        /// Runtime load: still wires clips onto Animation via the UniGLTF default.
+        /// </summary>
+        protected override Task SetupAnimationsAsync(IAwaitCaller awaitCaller)
+        {
+            if (IsAssetImport)
+            {
+                return Task.CompletedTask;
+            }
+
+            return base.SetupAnimationsAsync(awaitCaller);
         }
 
         /// <summary>
