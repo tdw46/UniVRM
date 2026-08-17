@@ -65,3 +65,8 @@ public
 .venv
 
 UIElementsSchema/
+
+# Local sandbox — throwaway experiments (see Assets/Sandbox/README.md)
+/[Aa]ssets/Sandbox/*
+!/[Aa]ssets/Sandbox/README.md
+!/[Aa]ssets/Sandbox/README.md.meta
