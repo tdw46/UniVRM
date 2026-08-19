@@ -1,11 +1,18 @@
-# UniVRM
+# Extended UniVRM
 
-[![GitHub latest release](https://img.shields.io/github/v/release/vrm-c/UniVRM?color=green)](https://github.com/vrm-c/UniVRM/releases/latest)
-[![GitHub license](https://img.shields.io/github/license/vrm-c/UniVRM)](https://github.com/vrm-c/UniVRM/blob/master/LICENSE.txt)
+Fork of [vrm-c/UniVRM](https://github.com/vrm-c/UniVRM) with generic VRM 1.0
+import/export extension hooks (for [UniVRMXT](https://github.com/miramocha/UniVRMXT)
+and other optional packages). Same UPM ids as upstream: `com.vrmc.gltf`,
+`com.vrmc.vrm`, `com.vrmc.univrm`.
 
-The standard implementation of 3D Avatar file format [VRM](https://vrm-consortium.org/en/) for [Unity](https://unity.com/).
+Install **this** repo’s git URLs when you need those hooks. Do not use
+[vrm-c/UniVRM](https://github.com/vrm-c/UniVRM) Releases for that.
 
-VRM is an extension of [glTF 2.0](https://www.khronos.org/gltf/), so this library also support glTF 2.0 files.
+[![GitHub license](https://img.shields.io/github/license/miramocha/Extended-UniVRM)](LICENSE.txt)
+
+Upstream UniVRM is the standard implementation of [VRM](https://vrm-consortium.org/en/)
+for [Unity](https://unity.com/). VRM is an extension of
+[glTF 2.0](https://www.khronos.org/gltf/).
 
 ## Features
 
@@ -50,58 +57,35 @@ The other platforms maybe work but they are not tested.
 
 ## Installation
 
-### Latest Release
+Unity **2022.3 LTS**. Package versions match upstream UniVRM **0.131.2**.
 
-[Download here](https://github.com/vrm-c/UniVRM/releases/latest)
+**Window → Package Manager → + → Add package from git URL…**, in this order:
 
-<details><summary>Previous Releases</summary>
-<p>
+| UPM id | Git URL |
+|--------|---------|
+| `com.vrmc.gltf` | `https://github.com/miramocha/Extended-UniVRM.git?path=/Packages/UniGLTF` |
+| `com.vrmc.vrm` (VRM 1.0) | `https://github.com/miramocha/Extended-UniVRM.git?path=/Packages/VRM10` |
+| `com.vrmc.univrm` (VRM 0.x, optional) | `https://github.com/miramocha/Extended-UniVRM.git?path=/Packages/VRM` |
 
-You can use an previous version of UniVRM if you use an older version of Unity.
-These are **not supported**.
+Or `Packages/manifest.json`:
 
-| Unity Version | UniVRM Release                                                    | VRM 1.0 support |
-| ------------- | ----------------------------------------------------------------- | --------------- |
-| 2021.3        | [v0.112.0](https://github.com/vrm-c/UniVRM/releases/tag/v0.127.0) | Yes             |
-| 2020.3        | [v0.100.0](https://github.com/vrm-c/UniVRM/releases/tag/v0.111.0) | Yes             |
-| 2019.3        | [v0.99.1](https://github.com/vrm-c/UniVRM/releases/tag/v0.99.1)   | No              |
-| 2018.4        | [v0.79.0](https://github.com/vrm-c/UniVRM/releases/tag/v0.79.0)   | No              |
+```json
+{
+  "dependencies": {
+    "com.vrmc.gltf": "https://github.com/miramocha/Extended-UniVRM.git?path=/Packages/UniGLTF",
+    "com.vrmc.vrm": "https://github.com/miramocha/Extended-UniVRM.git?path=/Packages/VRM10"
+  }
+}
+```
 
-</p>
-</details>
+Then add [UniVRMXT](https://github.com/miramocha/UniVRMXT) (`com.vrmxt.univrmxt`). Install
+notes: [UniVRMXT installation](https://github.com/miramocha/UniVRMXT/blob/main/docs/installation.md).
 
-You can install UniVRM using the UnityPackage or the UPM Package.
+This repo is also a Unity project checkout. For VRMXT import onto the `.vrm` asset and
+`VRMXT_*` export, enable **Project Settings → VRM10 → Enable VRM Import Extensions** and
+**Enable VRM Export Extensions**.
 
-### UnityPackage
-
-From the [latest release](https://github.com/vrm-c/UniVRM/releases/latest), you can download the `.unitypackage` files.
-
-- For import/export VRM 1.0
-  - You can download **VRM-0.XXX.X-YYYY.unitypackage**.
-  - You can also download sample projects as **VRM_Samples-0.XXX.X-YYYY.unitypackage**.
-- For import/export VRM 0.x
-  - You can download **UniVRM-0.XXX.X-YYYY.unitypackage**.
-  - You can also download sample projects as **UniVRM_Samples-0.XXX.X-YYYY.unitypackage**.
-- For import/export glTF 2.0
-  - You can download **VRM-0.XXX.X-YYYY.unitypackage**.
-
-### UPM Package
-
-From the [latest release](https://github.com/vrm-c/UniVRM/releases/latest), you can find UPM package urls.
-
-- For import/export VRM 1.0
-  - You have to install all of the following UPM packages:
-    - `com.vrmc.gltf`
-    - `com.vrmc.vrm`
-- For import/export VRM 0.x
-  - You have to install all of the following UPM packages:
-    - `com.vrmc.gltf`
-    - `com.vrmc.univrm`
-- For import/export glTF 2.0
-  - You have to install all of the following UPM packages:
-    - `com.vrmc.gltf`
-
-You can install these UPM packages via `Package Manager` -> `+` -> `Add package from git URL...` in UnityEditor.
+Stock UniVRM without hooks: [vrm-c/UniVRM](https://github.com/vrm-c/UniVRM) (same `?path=/Packages/…` layout from `v0.131.0`). `.unitypackage` install is upstream-only; this fork is git UPM.
 
 ## Documentation
 
