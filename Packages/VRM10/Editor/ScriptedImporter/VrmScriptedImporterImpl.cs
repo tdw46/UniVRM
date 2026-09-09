@@ -106,6 +106,7 @@ namespace UniVRM10
                 {
                     // successfully parsed vrm-1.0
                     Process(vrm1Data, scriptedImporter, context, renderPipeline);
+                    return;
                 }
 
                 if (!doMigrate)

@@ -454,8 +454,12 @@ namespace UniGLTF
                 return false;
             }
 
-            var colors = GetArrayFromAccessor<UnityEngine.Color>(attributes.COLOR_0);
-            foreach (var color in colors)
+            // COLOR_0 may be normalized bytes/shorts or floats, with RGB or
+            // RGBA components. Use the same decoder as mesh import rather than
+            // reinterpreting every accessor as four floats (Unity Color).
+            var primitive = new glTFPrimitives { attributes = attributes };
+            var colors = primitive.GetColors(this, GLTF.accessors[attributes.COLOR_0].count);
+            foreach (var color in colors.Value)
             {
                 if (color != ZERO)
                 {

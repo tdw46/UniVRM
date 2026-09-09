@@ -508,6 +508,22 @@ namespace UniVRM10
             return vrm;
         }
 
+        static Transform CreateSpringAssetHost(Transform parent, string baseName)
+        {
+            // ScriptedImporter identifies components by hierarchy path/type.
+            // Multiple colliders or groups on one GameObject otherwise collide.
+            // Identity children keep the original bone-space shape and motion;
+            // source-array indices keep their paths deterministic on reimport.
+            var name = baseName;
+            for (var suffix = 1; parent.Find(name) != null; ++suffix)
+            {
+                name = $"{baseName}_{suffix}";
+            }
+            var host = new GameObject(name).transform;
+            host.SetParent(parent, false);
+            return host;
+        }
+
         async Task LoadSpringBoneAsync(IAwaitCaller awaitCaller, Vrm10Instance controller, UniGLTF.Extensions.VRMC_springBone.VRMC_springBone gltfVrmSpringBone)
         {
             await awaitCaller.NextFrame();
@@ -518,7 +534,12 @@ namespace UniVRM10
             {
                 foreach (var c in gltfVrmSpringBone.Colliders)
                 {
-                    var collider = Nodes[c.Node.Value].gameObject.AddComponent<VRM10SpringBoneCollider>();
+                    var colliderHost = Nodes[c.Node.Value];
+                    if (IsAssetImport)
+                    {
+                        colliderHost = CreateSpringAssetHost(colliderHost, $"__VRM10_Collider_{colliders.Count}");
+                    }
+                    var collider = colliderHost.gameObject.AddComponent<VRM10SpringBoneCollider>();
                     colliders.Add(collider);
                     if (c.Shape.Capsule is UniGLTF.Extensions.VRMC_springBone.ColliderShapeCapsule capsule)
                     {
@@ -587,7 +608,10 @@ namespace UniVRM10
 
                 foreach (var g in gltfVrmSpringBone.ColliderGroups)
                 {
-                    var colliderGroup = secondary.gameObject.AddComponent<VRM10SpringBoneColliderGroup>();
+                    var groupHost = IsAssetImport
+                        ? CreateSpringAssetHost(secondary, $"__VRM10_ColliderGroup_{controller.SpringBone.ColliderGroups.Count}")
+                        : secondary;
+                    var colliderGroup = groupHost.gameObject.AddComponent<VRM10SpringBoneColliderGroup>();
                     colliderGroup.Name = g.Name;
                     controller.SpringBone.ColliderGroups.Add(colliderGroup);
 
