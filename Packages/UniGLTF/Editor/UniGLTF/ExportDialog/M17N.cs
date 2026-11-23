@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
+using UnityEngine;
 using System.Linq;
 using UniGLTF.Utils;
 using UnityEditor;
@@ -14,6 +14,12 @@ namespace UniGLTF.M17N
     {
         ja,
         en,
+        ko,
+        zh_HANS,
+        zh_HANT,
+        es,
+        fr,
+        de,
     }
 
     [System.AttributeUsage(System.AttributeTargets.Field, AllowMultiple = true, Inherited = false)]
@@ -48,7 +54,7 @@ namespace UniGLTF.M17N
             {
                 return match;
             }
-            return attr.First();
+            return attr.FirstOrDefault(x => x.Language == Languages.en) ?? attr.First();
         }
 
         public static string Get(Languages language, T key)
@@ -74,10 +80,28 @@ namespace UniGLTF.M17N
     {
         const string LANG_KEY = "VRM_LANG";
 
-        static Dictionary<CultureInfo, Languages> CultureMap = new Dictionary<CultureInfo, Languages>
+        // Unity 2022.3 stores the Editor language separately from the OS.
+        // Reading it leaves the user's Editor and UniVRM preferences untouched.
+        internal static Languages EditorLanguage()
         {
-            {new CultureInfo("ja-JP",false), Languages.ja},
-        };
+            if (!EditorPrefs.GetBool("Editor.kEnableEditorLocalization", true))
+                return Languages.en;
+            var language = Application.systemLanguage;
+            if (Enum.TryParse<SystemLanguage>(EditorPrefs.GetString("Editor.kEditorLocale"), true, out var selected))
+                language = selected;
+            switch (language)
+            {
+                case SystemLanguage.Japanese: return Languages.ja;
+                case SystemLanguage.Korean: return Languages.ko;
+                case SystemLanguage.ChineseTraditional: return Languages.zh_HANT;
+                case SystemLanguage.Chinese:
+                case SystemLanguage.ChineseSimplified: return Languages.zh_HANS;
+                case SystemLanguage.Spanish: return Languages.es;
+                case SystemLanguage.French: return Languages.fr;
+                case SystemLanguage.German: return Languages.de;
+                default: return Languages.en;
+            }
+        }
 
         static Languages? s_lang;
 
@@ -88,20 +112,13 @@ namespace UniGLTF.M17N
                 if (!s_lang.HasValue)
                 {
                     var value = EditorPrefs.GetString(LANG_KEY);
-                    if (!string.IsNullOrEmpty(value) && Enum.TryParse<Languages>(value, true, out Languages parsed))
+                    if (!string.IsNullOrEmpty(value) && Enum.TryParse<Languages>(value, true, out Languages parsed) && Enum.IsDefined(typeof(Languages), parsed))
                     {
                         s_lang = parsed;
                     }
                     else
                     {
-                        if (CultureMap.TryGetValue(CultureInfo.CurrentCulture, out Languages lang))
-                        {
-                            s_lang = lang;
-                        }
-                        else
-                        {
-                            s_lang = default(Languages);
-                        }
+                        s_lang = EditorLanguage();
                     }
                 }
                 return s_lang.GetValueOrDefault();
