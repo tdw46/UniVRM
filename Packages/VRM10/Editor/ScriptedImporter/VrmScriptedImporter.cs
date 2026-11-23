@@ -9,7 +9,7 @@ using UnityEditor.Experimental.AssetImporters;
 
 namespace UniVRM10
 {
-    [ScriptedImporter(1, "vrm")]
+    [ScriptedImporter(2, "vrm")]
     public class VrmScriptedImporter : ScriptedImporter
     {
         [SerializeField]
@@ -17,6 +17,15 @@ namespace UniVRM10
 
         [SerializeField]
         public ImporterRenderPipelineTypes RenderPipeline = default;
+
+        // Shader.Find may still be empty in a clean import worker. Request the
+        // shader artifacts before Unity schedules any VRM that consumes them.
+        internal const string Mtoon = "Packages/com.vrmc.vrm/MToon10/Shaders/vrmc_materials_mtoon.shader";
+        internal const string MtoonUrp = "Packages/com.vrmc.vrm/MToon10/Shaders/vrmc_materials_mtoon_urp.shader";
+        internal const string UniUnlit = "Packages/com.vrmc.gltf/UniUnlit/Shaders/UniUnlit.shader";
+
+        static string[] GatherDependenciesFromSourceFile(string path)
+            => new[] { Mtoon, MtoonUrp, UniUnlit };
 
         public override void OnImportAsset(AssetImportContext ctx)
         {

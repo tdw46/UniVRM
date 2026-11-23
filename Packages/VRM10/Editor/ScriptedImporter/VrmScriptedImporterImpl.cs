@@ -141,13 +141,31 @@ namespace UniVRM10
                 return settings.MaterialDescriptorGeneratorFactory.Create();
             }
 
-            return renderPipeline switch
+            var generator = renderPipeline switch
             {
                 ImporterRenderPipelineTypes.Auto => Vrm10MaterialDescriptorGeneratorUtility.GetValidVrm10MaterialDescriptorGenerator(),
                 ImporterRenderPipelineTypes.BuiltinRenderPipeline => Vrm10MaterialDescriptorGeneratorUtility.GetVrm10MaterialDescriptorGenerator(RenderPipelineTypes.BuiltinRenderPipeline),
                 ImporterRenderPipelineTypes.UniversalRenderPipeline => Vrm10MaterialDescriptorGeneratorUtility.GetVrm10MaterialDescriptorGenerator(RenderPipelineTypes.UniversalRenderPipeline),
                 _ => Vrm10MaterialDescriptorGeneratorUtility.GetValidVrm10MaterialDescriptorGenerator(),
             };
+            if (generator is BuiltInVrm10MaterialDescriptorGenerator builtin)
+            {
+                builtin.MToonMaterialImporter.Shader = LoadShader(VrmScriptedImporter.Mtoon);
+                builtin.UnlitMaterialImporter.Shader = LoadShader(VrmScriptedImporter.UniUnlit);
+            }
+            else if (generator is UrpVrm10MaterialDescriptorGenerator urp)
+            {
+                urp.MToonMaterialImporter.Shader = LoadShader(VrmScriptedImporter.MtoonUrp);
+                urp.UnlitMaterialImporter.Shader = LoadShader(VrmScriptedImporter.UniUnlit);
+            }
+            return generator;
+        }
+
+        static Shader LoadShader(string path)
+        {
+            var shader = UnityEditor.AssetDatabase.LoadAssetAtPath<Shader>(path);
+            if (!shader) throw new InvalidOperationException("VRM import requires the shader asset at " + path);
+            return shader;
         }
     }
 }
