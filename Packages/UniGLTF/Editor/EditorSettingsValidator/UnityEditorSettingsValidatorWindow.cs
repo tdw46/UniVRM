@@ -1,5 +1,5 @@
 using UnityEditor;
-using UnityEditor.PackageManager;
+using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 using UnityEngine;
 using UniGLTF.M17N;
 
