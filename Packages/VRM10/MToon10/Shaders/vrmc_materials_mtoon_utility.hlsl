@@ -14,6 +14,8 @@ static const half EPSILON_FP16 = 0.0009765625;
 
 inline half mtoon_linearstep(const half start, const half end, const half t)
 {
+    // At full toony the interval collapses. Define the hard edge, including equality.
+    if (start == end) return t > start ? 1.0h : 0.0h;
     return min(max((t - start) / (end - start), 0.0), 1.0);
 }
 
