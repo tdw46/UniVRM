@@ -30,7 +30,10 @@ namespace UniGLTF.EditorSettingsValidator
         [MenuItem("UniGLTF/Material Import Settings")]
         private static void Open()
         {
-            GetWindow<UnityEditorSettingsValidatorWindow>(utility: true);
+            var window = GetWindow<UnityEditorSettingsValidatorWindow>(utility: true);
+            var host = EditorGUIUtility.GetMainWindowPosition();
+            var size = new Vector2(440, 226);
+            window.position = new Rect(host.center - size * 0.5f, size);
         }
 
         private void OnEnable()
@@ -65,7 +68,7 @@ namespace UniGLTF.EditorSettingsValidator
                     EditorGUILayout.LabelField(Messages.ProjectScope.Msg(), EditorStyles.wordWrappedMiniLabel);
                 }
 
-                GUILayout.FlexibleSpace();
+                EditorGUILayout.Space(12);
                 using (new EditorGUILayout.HorizontalScope())
                 {
                     if (GUILayout.Button(Messages.Later.Msg(), GUILayout.Height(26)))
