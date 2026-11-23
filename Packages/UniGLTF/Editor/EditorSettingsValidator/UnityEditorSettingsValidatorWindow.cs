@@ -1,101 +1,85 @@
-﻿using System;
-using UniGLTF.M17N;
 using UnityEditor;
+using UnityEditor.PackageManager;
 using UnityEngine;
+using UniGLTF.M17N;
 
 namespace UniGLTF.EditorSettingsValidator
 {
     [InitializeOnLoad]
     public sealed class UnityEditorSettingsValidatorWindow : EditorWindow
     {
-        private static readonly UnityEditorSettingsValidator Validator = new UnityEditorSettingsValidator();
+        private const string DeferredKey = "UniGLTF.LinearColorSpace.Deferred";
+        private static readonly UnityColorSpaceSettingsValidator ColorSpace = new UnityColorSpaceSettingsValidator();
+        private bool _usesVrmxt;
 
         static UnityEditorSettingsValidatorWindow()
         {
 #if !UNITY_WEBGL
-            EditorApplication.update += Validate;
+            EditorApplication.delayCall += ShowIfNeeded;
 #endif
         }
 
-        private static void Validate()
+        private static void ShowIfNeeded()
         {
-            if (!Validator.IsValid())
+            if (!Application.isBatchMode && !ColorSpace.IsValid && !SessionState.GetBool(DeferredKey, false))
             {
-                var window = GetWindow<UnityEditorSettingsValidatorWindow>(utility: true);
-                window.minSize = new Vector2(320, 300);
+                Open();
             }
         }
 
-        private void OnProjectChange()
+        [MenuItem("UniGLTF/Material Import Settings")]
+        private static void Open()
         {
-#if !UNITY_WEBGL
-            Validate();
-#endif
+            GetWindow<UnityEditorSettingsValidatorWindow>(utility: true);
+        }
+
+        private void OnEnable()
+        {
+            _usesVrmxt = PackageInfo.FindForAssetPath("Packages/com.vrmxt.univrmxt/package.json") != null;
+            titleContent = new GUIContent((_usesVrmxt ? Messages.VrmxtSetup : Messages.VrmSetup).Msg());
+            minSize = new Vector2(425, 222);
         }
 
         private void OnGUI()
         {
-            if (Validator.IsValid())
+            using (new EditorGUILayout.VerticalScope(new GUIStyle { padding = new RectOffset(16, 16, 14, 14) }))
             {
-                GUILayout.FlexibleSpace();
-
-                GUILayout.Label(Messages.ThankYou.Msg(), new GUIStyle(EditorStyles.boldLabel)
+                if (ColorSpace.IsValid)
                 {
-                    alignment = TextAnchor.MiddleCenter,
-                    fontSize = 20,
-                });
-
-                GUILayout.FlexibleSpace();
-
-                GUILayout.BeginVertical(GUI.skin.box);
-                GUILayout.Label(Messages.YouCanCloseThisWindow.Msg());
-                if (GUILayout.Button(Messages.CloseWindowButton.Msg()))
-                {
-                    Close();
+                    EditorGUILayout.LabelField(Messages.SettingsReady.Msg(), EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField(Messages.ColorSpace.Msg(), ColorSpace.CurrentValueDescription);
+                    GUILayout.FlexibleSpace();
+                    if (GUILayout.Button(Messages.CloseWindowButton.Msg())) Close();
+                    return;
                 }
 
-                GUILayout.EndVertical();
-            }
-            else
-            {
-                GUILayout.BeginVertical(GUI.skin.box);
-                GUILayout.Space(5);
-                GUILayout.Label(Messages.RecommendedProjectSettingsForUniGltfAndUniVrm.Msg());
-                GUILayout.Space(5);
-                GUILayout.EndVertical();
-
-                GUILayout.Space(10);
-
-                foreach (var validator in Validator.Validators)
+                EditorGUILayout.LabelField(Messages.LinearHeading.Msg(), EditorStyles.boldLabel);
+                EditorGUILayout.Space(5);
+                EditorGUILayout.LabelField((_usesVrmxt ? Messages.VrmxtExplanation : Messages.VrmExplanation).Msg(),
+                    EditorStyles.wordWrappedLabel);
+                EditorGUILayout.Space(10);
+                using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
                 {
-                    GUILayout.Label($"{validator.HeaderDescription} ({Messages.CurrentValue.Msg()} = {validator.CurrentValueDescription})");
-                    var oldEnabled = GUI.enabled;
-                    GUI.enabled = !validator.IsValid;
-                    if (GUILayout.Button($"{Messages.UseRecommended.Msg()} {validator.RecommendedValueDescription}"))
+                    EditorGUILayout.LabelField(Messages.ColorSpace.Msg(),
+                        ColorSpace.CurrentValueDescription + "  →  " + ColorSpace.RecommendedValueDescription);
+                    EditorGUILayout.LabelField(Messages.ProjectScope.Msg(), EditorStyles.wordWrappedMiniLabel);
+                }
+
+                GUILayout.FlexibleSpace();
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    if (GUILayout.Button(Messages.Later.Msg(), GUILayout.Height(26)))
                     {
-                        validator.Validate();
+                        SessionState.SetBool(DeferredKey, true);
+                        Close();
                     }
-
-                    GUI.enabled = oldEnabled;
-
-                    GUILayout.Space(5);
-                }
-
-                GUILayout.FlexibleSpace();
-
-                GUILayout.BeginVertical(GUI.skin.box);
-                if (GUILayout.Button(Messages.AcceptAllButton.Msg()))
-                {
-                    foreach (var validator in Validator.Validators)
+                    GUILayout.Space(4);
+                    if (GUILayout.Button(Messages.ApplyLinear.Msg(), GUILayout.MinWidth(190), GUILayout.Height(26)))
                     {
-                        if (!validator.IsValid)
-                        {
-                            validator.Validate();
-                        }
+                        ColorSpace.Validate();
+                        Close();
                     }
                 }
-
-                GUILayout.EndVertical();
             }
         }
     }

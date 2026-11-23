@@ -1,4 +1,4 @@
-﻿
+ï»¿
 using UniGLTF.M17N;
 
 namespace UniGLTF.EditorSettingsValidator
@@ -44,5 +44,41 @@ namespace UniGLTF.EditorSettingsValidator
         [LangMsg(Languages.en, "Accept All")]
         [LangMsg(Languages.ja, "Accept All")]
         AcceptAllButton,
+
+        [LangMsg(Languages.en, "VRMXT Material Setup")]
+        [LangMsg(Languages.ja, "VRMXT マテリアル設定")]
+        VrmxtSetup,
+
+        [LangMsg(Languages.en, "VRM Material Setup")]
+        [LangMsg(Languages.ja, "VRM マテリアル設定")]
+        VrmSetup,
+
+        [LangMsg(Languages.en, "Use Linear color space for character materials")]
+        [LangMsg(Languages.ja, "キャラクターのマテリアルにリニア色空間を使用")]
+        LinearHeading,
+
+        [LangMsg(Languages.en, "Click Apply Linear color space to preview the imported character’s VRMXT materials with their intended lighting and shading.")]
+        [LangMsg(Languages.ja, "インポートしたキャラクターの VRMXT マテリアルを意図した光と陰影で表示するには、「リニア色空間を適用」をクリックしてください。")]
+        VrmxtExplanation,
+
+        [LangMsg(Languages.en, "Apply Linear color space to preview imported VRM materials with the lighting recommended by UniVRM.")]
+        [LangMsg(Languages.ja, "UniVRM が推奨するライティングでインポートした VRM マテリアルを表示するには、リニア色空間を適用してください。")]
+        VrmExplanation,
+
+        [LangMsg(Languages.en, "This change affects every scene in this Unity project.")]
+        [LangMsg(Languages.ja, "この変更は、この Unity プロジェクト内のすべてのシーンに適用されます。")]
+        ProjectScope,
+
+        [LangMsg(Languages.en, "Later")]
+        [LangMsg(Languages.ja, "後で")]
+        Later,
+
+        [LangMsg(Languages.en, "Apply Linear color space")]
+        [LangMsg(Languages.ja, "リニア色空間を適用")]
+        ApplyLinear,
+
+        [LangMsg(Languages.en, "Material import settings are ready")]
+        [LangMsg(Languages.ja, "マテリアルのインポート設定は完了しています")]
+        SettingsReady,
     }
 }
